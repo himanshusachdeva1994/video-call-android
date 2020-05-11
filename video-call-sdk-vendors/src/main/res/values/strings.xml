@@ -1,0 +1,5 @@
+<resources>
+    <string name="turn_speaker_on">Speaker ON</string>
+    <string name="switch_camera">Switch Camera</string>
+    <string name="share_screen">Share screen</string>
+</resources>
