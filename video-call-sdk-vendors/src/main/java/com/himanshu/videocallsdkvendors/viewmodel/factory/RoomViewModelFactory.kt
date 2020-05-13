@@ -9,7 +9,7 @@ import com.himanshu.videocallsdkvendors.viewmodel.TwilioVideoCallViewModel
 /**
  * @author : Himanshu Sachdeva
  * @created : 13-May-2020
- * @email : himanshu.sachdeva@instantsys.com
+ * @email : himanshu.sachdeva1994@gmail.com
  */
 class RoomViewModelFactory(private val application: Application,
                            private val roomManager: RoomManager)

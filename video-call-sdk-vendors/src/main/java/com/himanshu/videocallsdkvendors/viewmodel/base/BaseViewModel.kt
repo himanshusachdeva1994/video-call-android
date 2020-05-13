@@ -12,7 +12,7 @@ import com.himanshu.videocallsdkvendors.interfaces.DataBindingViewClickCallbacks
 /**
  * @author : Himanshu Sachdeva
  * @created : 13-May-2020
- * @email : himanshu.sachdeva@instantsys.com
+ * @email : himanshu.sachdeva1994@gmail.com
  */
 abstract class BaseViewModel(application: Application) : AndroidViewModel(application) {
 

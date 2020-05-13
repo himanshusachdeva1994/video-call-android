@@ -10,7 +10,7 @@ import dagger.Provides
 /**
  * @author : Himanshu Sachdeva
  * @created : 13-May-2020
- * @email : himanshu.sachdeva@instantsys.com
+ * @email : himanshu.sachdeva1994@gmail.com
  */
 @Module(includes = [ApplicationModule::class])
 class RoomManagerModule {

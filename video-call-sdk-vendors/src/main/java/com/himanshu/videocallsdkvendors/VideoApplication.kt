@@ -13,7 +13,7 @@ import javax.inject.Inject
 /**
  * @author : Himanshu Sachdeva
  * @created : 13-May-2020
- * @email : himanshu.sachdeva@instantsys.com
+ * @email : himanshu.sachdeva1994@gmail.com
  */
 class VideoApplication : Application(), HasAndroidInjector {
 
@@ -27,6 +27,7 @@ class VideoApplication : Application(), HasAndroidInjector {
                 .applicationModule(ApplicationModule(this))
                 .build()
                 .inject(this)
+
         if (BuildConfig.DEBUG) {
             Timber.plant(DebugTree())
         }

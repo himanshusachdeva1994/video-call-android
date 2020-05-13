@@ -15,7 +15,7 @@ import timber.log.Timber
 /**
  * @author : Himanshu Sachdeva
  * @created : 13-May-2020
- * @email : himanshu.sachdeva@instantsys.com
+ * @email : himanshu.sachdeva1994@gmail.com
  */
 class RoomManager(private val context: Context,
                   private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)) {
