@@ -54,8 +54,13 @@ dependencies {
     // Kotlin
     implementation "androidx.core:core-ktx:1.2.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    kapt 'com.android.databinding:compiler:3.6.3'
 
     // Dagger
+    implementation "com.google.dagger:dagger-android-support:$dagger_version"
     implementation "com.google.dagger:dagger:$dagger_version"
     kapt "com.google.dagger:dagger-compiler:$dagger_version"
+
+    implementation 'com.jakewharton.timber:timber:4.7.1'
+    implementation 'com.google.android.material:material:1.1.0'
 }

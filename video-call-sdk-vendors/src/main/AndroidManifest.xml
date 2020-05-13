@@ -13,12 +13,13 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
-    <application>
+    <application android:name=".VideoApplication">
         <activity
             android:name=".view.activity.TwilioVideoCallActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.Lobby"></activity>
-    </application>
+            android:theme="@style/AppTheme.Lobby" />
 
+        <service android:name=".services.twilio.TwilioVideoService" />
+    </application>
 </manifest>

@@ -2,4 +2,29 @@
     <string name="turn_speaker_on">Speaker ON</string>
     <string name="switch_camera">Switch Camera</string>
     <string name="share_screen">Share screen</string>
+
+    <!--  Notifications  -->
+    <string name="room_notification_channel_title">Video Call</string>
+    <string name="room_notification_title">Ongoing video call in %s</string>
+    <string name="room_notification_message">Tap to return to the room.</string>
+
+    <string name="you">You</string>
+    <string name="profile_picture">Profile picture</string>
+
+    <string name="camera_video_track">Camera Video Track</string>
+    <string name="screen_video_track">Screen Video Track</string>
+    <string name="stop_screen_share">Stop screen share</string>
+
+    <string name="failed_to_add_camera_video_track">Failed to add camera video track</string>
+    <string name="failed_to_add_screen_video_track">Failed to add screen video track</string>
+    <string name="screen_capture_error">Screen capturer error occurred.</string>
+
+    <string name="screen_capture_permission_not_granted">Screen capture permission not granted</string>
+
+    <string name="audio_toggle">Audio toggle</string>
+    <string name="video_logo">Video Logo</string>
+
+    <!--  Room Screen  -->
+    <string name="room_screen_connection_failure_title">Connection Failure</string>
+    <string name="room_screen_connection_failure_message">Failed to connect to the room.</string>
 </resources>
