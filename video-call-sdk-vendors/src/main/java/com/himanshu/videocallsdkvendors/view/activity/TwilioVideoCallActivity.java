@@ -12,7 +12,6 @@ import android.media.AudioManager;
 import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -72,7 +71,6 @@ import timber.log.Timber;
 import static com.himanshu.videocallsdkvendors.annotations.twilio.StateKt.NO_VIDEO;
 import static com.himanshu.videocallsdkvendors.annotations.twilio.StateKt.SELECTED;
 import static com.himanshu.videocallsdkvendors.annotations.twilio.StateKt.VIDEO;
-import static com.himanshu.videocallsdkvendors.constants.IntentKeyConstants.AUTH_TOKEN;
 import static com.twilio.video.AspectRatio.ASPECT_RATIO_16_9;
 import static com.twilio.video.Room.State.CONNECTED;
 
@@ -164,7 +162,7 @@ public class TwilioVideoCallActivity extends BaseActivity {
             isAudioMuted = savedInstanceState.getBoolean(IS_AUDIO_MUTED);
             isVideoMuted = savedInstanceState.getBoolean(IS_VIDEO_MUTED);
             authToken = savedInstanceState.getString(AUTH_TOKEN);
-        } else if (getIntent() != null && getIntent().hasExtra(IntentKeyConstants.AUTH_TOKEN)){
+        } else if (getIntent() != null && getIntent().hasExtra(IntentKeyConstants.AUTH_TOKEN)) {
             authToken = getIntent().getStringExtra(IntentKeyConstants.AUTH_TOKEN);
         }
 
@@ -536,7 +534,8 @@ public class TwilioVideoCallActivity extends BaseActivity {
                         new String[]{
                                 Manifest.permission.RECORD_AUDIO,
                                 Manifest.permission.CAMERA,
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                Manifest.permission.READ_PHONE_STATE
                         },
                         PERMISSIONS_REQUEST_CODE);
             } else {
@@ -550,12 +549,13 @@ public class TwilioVideoCallActivity extends BaseActivity {
     private boolean permissionsGranted() {
         int resultCamera = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
         int resultMic = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO);
-        int resultStorage =
-                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int resultStorage = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int resultPhoneState = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE);
 
         return ((resultCamera == PackageManager.PERMISSION_GRANTED)
                 && (resultMic == PackageManager.PERMISSION_GRANTED)
-                && (resultStorage == PackageManager.PERMISSION_GRANTED));
+                && (resultStorage == PackageManager.PERMISSION_GRANTED)
+                && (resultPhoneState == PackageManager.PERMISSION_GRANTED));
     }
 
     /**
@@ -1130,7 +1130,7 @@ public class TwilioVideoCallActivity extends BaseActivity {
 
             RemoteParticipantListener listener =
                     new RemoteParticipantListener(participantController.getThumb(
-                                    remoteParticipant.getSid(), remoteVideoTrack),
+                            remoteParticipant.getSid(), remoteVideoTrack),
                             remoteParticipant.getSid());
             remoteParticipant.setListener(listener);
         }
