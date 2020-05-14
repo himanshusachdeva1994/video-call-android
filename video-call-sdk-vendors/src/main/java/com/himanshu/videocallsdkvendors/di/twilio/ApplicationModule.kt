@@ -11,5 +11,4 @@ class ApplicationModule(private val app: Application) {
     fun provideApplication(): Application {
         return app
     }
-
 }
