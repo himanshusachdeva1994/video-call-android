@@ -2,34 +2,42 @@ package com.himanshu.videocallsdkvendors.broadcast;
 
 import android.content.Context;
 
-import java.util.Date;
-
 import timber.log.Timber;
 
+/**
+ * @author : Himanshu Sachdeva
+ * @created : 14-May-2020
+ * @email : himanshu.sachdeva1994@gmail.com
+ */
 public class CallReceiver extends PhonecallReceiver {
 
     @Override
-    protected void onIncomingCallStarted(Context ctx, String number, Date start) {
-        Timber.d("onIncomingCallStarted %s", number);
+    public void onIncomingCallStarted(Context context) {
+        Timber.d("onIncomingCallStarted");
     }
 
     @Override
-    protected void onOutgoingCallStarted(Context ctx, String number, Date start) {
-        Timber.d("onOutgoingCallStarted %s", number);
+    public void onOutgoingCallStarted(Context context) {
+        Timber.d("onOutgoingCallStarted");
     }
 
     @Override
-    protected void onIncomingCallEnded(Context ctx, String number, Date start, Date end) {
-        Timber.d("onIncomingCallEnded %s", number);
+    public void onIncomingCallEnded(Context context) {
+        Timber.d("onIncomingCallEnded");
     }
 
     @Override
-    protected void onOutgoingCallEnded(Context ctx, String number, Date start, Date end) {
-        Timber.d("onOutgoingCallEnded %s", number);
+    public void onOutgoingCallEnded(Context context) {
+        Timber.d("onOutgoingCallEnded");
     }
 
     @Override
-    protected void onMissedCall(Context ctx, String number, Date start) {
-        Timber.d("onMissedCall %s", number);
+    public void onMissedCall(Context context) {
+        Timber.d("onMissedCall");
+    }
+
+    @Override
+    public void onIncomingCallAnswered(Context context) {
+        Timber.d("onIncomingCallAnswered");
     }
 }

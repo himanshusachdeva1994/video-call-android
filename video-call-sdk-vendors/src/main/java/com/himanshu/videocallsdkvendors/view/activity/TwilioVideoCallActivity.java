@@ -74,6 +74,11 @@ import static com.himanshu.videocallsdkvendors.annotations.twilio.StateKt.VIDEO;
 import static com.twilio.video.AspectRatio.ASPECT_RATIO_16_9;
 import static com.twilio.video.Room.State.CONNECTED;
 
+/**
+ * @author : Himanshu Sachdeva
+ * @created : 12-May-2020
+ * @email : himanshu.sachdeva1994@gmail.com
+ */
 public class TwilioVideoCallActivity extends BaseActivity {
 
     private ActivityTwilioVideoCallBinding binding;
