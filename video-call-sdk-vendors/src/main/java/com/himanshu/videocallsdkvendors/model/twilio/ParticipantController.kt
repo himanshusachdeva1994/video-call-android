@@ -408,5 +408,4 @@ class ParticipantController(
     interface ItemClickListener {
         fun onThumbClick(item: Item?)
     }
-
 }
