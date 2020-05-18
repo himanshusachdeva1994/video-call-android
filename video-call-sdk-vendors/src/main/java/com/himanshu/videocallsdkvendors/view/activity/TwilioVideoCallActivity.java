@@ -3,8 +3,10 @@ package com.himanshu.videocallsdkvendors.view.activity;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
@@ -26,6 +28,8 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.snackbar.Snackbar;
 import com.himanshu.videocallsdkvendors.R;
 import com.himanshu.videocallsdkvendors.constants.IntentKeyConstants;
+import com.himanshu.videocallsdkvendors.constants.LocalBroadcastKeyConstants;
+import com.himanshu.videocallsdkvendors.constants.PhoneCallStateConstants;
 import com.himanshu.videocallsdkvendors.databinding.ActivityTwilioVideoCallBinding;
 import com.himanshu.videocallsdkvendors.helper.twilio.CameraCaptureHelper;
 import com.himanshu.videocallsdkvendors.helper.twilio.RoomManager;
@@ -71,6 +75,7 @@ import timber.log.Timber;
 import static com.himanshu.videocallsdkvendors.annotations.twilio.StateKt.NO_VIDEO;
 import static com.himanshu.videocallsdkvendors.annotations.twilio.StateKt.SELECTED;
 import static com.himanshu.videocallsdkvendors.annotations.twilio.StateKt.VIDEO;
+import static com.himanshu.videocallsdkvendors.constants.IntentKeyConstants.PHONE_CALL_STATE;
 import static com.twilio.video.AspectRatio.ASPECT_RATIO_16_9;
 import static com.twilio.video.Room.State.CONNECTED;
 
@@ -950,6 +955,10 @@ public class TwilioVideoCallActivity extends BaseActivity {
     protected void onStart() {
         super.onStart();
 
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(LocalBroadcastKeyConstants.BROADCAST_PHONE_CALL_STATE);
+        registerReceiver(broadcastReceiver, intentFilter);
+
         restoreCameraTrack();
         publishLocalTracks();
         addParticipantViews();
@@ -994,10 +1003,11 @@ public class TwilioVideoCallActivity extends BaseActivity {
                     localAudioTrack == null,
                     cameraCapturer.getCameraSource() == CameraCapturer.CameraSource.FRONT_CAMERA);
 
-            localParticipant.setListener(
-                    new LocalParticipantListener(
-                            participantController.getThumb(localParticipantSid, cameraVideoTrack)));
-            participantController.getThumb(localParticipantSid, cameraVideoTrack).callOnClick();
+            ParticipantView thumb = participantController.getThumb(localParticipantSid, cameraVideoTrack);
+            if (thumb != null) {
+                localParticipant.setListener(new LocalParticipantListener(thumb));
+                thumb.callOnClick();
+            }
 
             // add existing room participants thumbs
             boolean isFirstParticipant = true;
@@ -1225,6 +1235,10 @@ public class TwilioVideoCallActivity extends BaseActivity {
         removeCameraTrack();
         removeAllParticipants();
         super.onStop();
+
+        if (broadcastReceiver != null) {
+            unregisterReceiver(broadcastReceiver);
+        }
     }
 
     /**
@@ -1386,4 +1400,26 @@ public class TwilioVideoCallActivity extends BaseActivity {
                         ? R.drawable.ic_videocam_white
                         : R.drawable.ic_videocam_off_gray);
     }
+
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Timber.d("onReceive: broadcastReceiver");
+            String intentAction = intent.getAction();
+
+            if (intentAction != null && intentAction.equalsIgnoreCase(LocalBroadcastKeyConstants.BROADCAST_PHONE_CALL_STATE) && intent != null) {
+                switch (intent.getStringExtra(PHONE_CALL_STATE)) {
+                    case PhoneCallStateConstants.INCOMING_CALL_ANSWERED:
+                    case PhoneCallStateConstants.OUTGOING_CALL_STARTED:
+                        // Pause video call
+                        break;
+
+                    case PhoneCallStateConstants.INCOMING_CALL_ENDED:
+                    case PhoneCallStateConstants.OUTGOING_CALL_ENDED:
+                        // Resume video call
+                        break;
+                }
+            }
+        }
+    };
 }

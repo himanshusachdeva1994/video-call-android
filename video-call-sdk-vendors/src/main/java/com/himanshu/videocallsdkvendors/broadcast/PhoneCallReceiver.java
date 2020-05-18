@@ -12,7 +12,7 @@ import com.himanshu.videocallsdkvendors.interfaces.PhoneCallStateListenerCallbac
  * @created : 14-May-2020
  * @email : himanshu.sachdeva1994@gmail.com
  */
-public abstract class PhonecallReceiver extends BroadcastReceiver implements PhoneCallStateListenerCallbacks {
+public abstract class PhoneCallReceiver extends BroadcastReceiver implements PhoneCallStateListenerCallbacks {
 
     //The receiver will be recreated whenever android feels like it.  We need a static variable to remember data between instantiations
     private static int lastState = TelephonyManager.CALL_STATE_IDLE;

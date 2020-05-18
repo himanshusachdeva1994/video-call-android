@@ -8,4 +8,5 @@ package com.himanshu.videocallsdkvendors.constants;
 public class IntentKeyConstants {
 
     public static final String AUTH_TOKEN = "AUTH_TOKEN";
+    public static final String PHONE_CALL_STATE = "PHONE_CALL_STATE";
 }
