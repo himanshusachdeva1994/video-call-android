@@ -27,4 +27,8 @@
     <!--  Room Screen  -->
     <string name="room_screen_connection_failure_title">Connection Failure</string>
     <string name="room_screen_connection_failure_message">Failed to connect to the room.</string>
+
+    <string name="logout_dialog_title">Are you sure you want to leave this meeting?</string>
+    <string name="logout_dialog_positive">Yes</string>
+    <string name="logout_dialog_negative">No</string>
 </resources>

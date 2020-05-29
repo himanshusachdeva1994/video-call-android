@@ -31,7 +31,7 @@ class TwilioVideoCallViewModel(application: Application, private val roomManager
                         false)
             }
 
-    private fun disconnect() {
+    public fun disconnect() {
         roomManager.disconnect()
     }
 
