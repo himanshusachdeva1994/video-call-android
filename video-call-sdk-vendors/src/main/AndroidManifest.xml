@@ -19,15 +19,13 @@
             android:name=".view.activity.TwilioVideoCallActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.Lobby" />
+            android:theme="@style/AppTheme.NoActionBar.Lobby" />
 
         <service android:name=".services.twilio.TwilioVideoService" />
 
         <receiver android:name=".broadcast.CallReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.PHONE_STATE" />
-            </intent-filter>
-            <intent-filter>
                 <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
             </intent-filter>
         </receiver>

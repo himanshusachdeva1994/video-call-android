@@ -25,7 +25,6 @@ import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.himanshu.videocallsdkvendors.R;
 import com.himanshu.videocallsdkvendors.constants.IntentKeyConstants;
@@ -1439,12 +1438,12 @@ public class TwilioVideoCallActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-        new MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.logout_dialog_title)
-                .setPositiveButton(R.string.logout_dialog_positive, (dialog, which) -> {
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                .setTitle(getString(R.string.dialog_title_meeting_end))
+                .setPositiveButton(R.string.dialog_positive, (dialog, which) -> {
                     viewModel.disconnect();
                 })
-                .setNegativeButton(R.string.logout_dialog_negative, null)
+                .setNegativeButton(R.string.dialog_negative, null)
                 .show();
     }
 }
