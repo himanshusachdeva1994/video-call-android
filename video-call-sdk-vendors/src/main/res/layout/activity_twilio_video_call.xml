@@ -13,95 +13,119 @@
             type="com.himanshu.videocallsdkvendors.viewmodel.base.BaseViewModel" />
     </data>
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <include
             android:id="@+id/layout_content_room"
-            layout="@layout/content_room" />
-
-        <com.google.android.material.appbar.AppBarLayout
-            android:id="@+id/lobby_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/lobbyToolbar"
-            app:elevation="0dp">
-
-            <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fitsSystemWindows="true"
-                android:minHeight="?attr/actionBarSize"
-                app:popupTheme="@style/AppTheme.Lobby.PopupMenu" />
-        </com.google.android.material.appbar.AppBarLayout>
+            layout="@layout/content_room"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <LinearLayout
-            android:id="@+id/join_status_layout"
+            android:id="@+id/ll_mediaControl_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:orientation="vertical"
-            android:visibility="visible"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+            android:background="@color/skypeLobbyMediaControlContainerBackground"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="@dimen/padding_10dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
 
-            <TextView
-                android:id="@+id/join_status"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textColor="@color/joinLayoutTextColor"
-                android:textSize="18sp" />
+            <ImageView
+                android:id="@+id/iv_mediaControl_audio"
+                android:layout_width="@dimen/width_50dp"
+                android:layout_height="@dimen/height_50dp"
+                android:layout_marginStart="@dimen/margin_5dp"
+                android:layout_marginEnd="@dimen/margin_5dp"
+                android:background="@drawable/selector_background_button"
+                android:onClick="@{(v) -> handler.onClicked(v)}"
+                android:src="@drawable/ic_media_control_mute" />
 
-            <TextView
-                android:id="@+id/join_room_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:gravity="center"
-                android:textColor="@color/joinLayoutTextColor"
-                android:textSize="24sp"
-                android:textStyle="bold" />
+            <ImageView
+                android:id="@+id/iv_mediaControl_disconnect"
+                android:layout_width="@dimen/width_50dp"
+                android:layout_height="@dimen/height_50dp"
+                android:layout_marginStart="@dimen/margin_5dp"
+                android:layout_marginEnd="@dimen/margin_5dp"
+                android:background="@drawable/shape_background_button_disconnect"
+                android:onClick="@{(v) -> handler.onClicked(v)}"
+                android:padding="@dimen/padding_6dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_media_control_disconnect" />
+
+            <ImageView
+                android:id="@+id/iv_mediaControl_video"
+                android:layout_width="@dimen/width_50dp"
+                android:layout_height="@dimen/height_50dp"
+                android:layout_marginStart="@dimen/margin_5dp"
+                android:layout_marginEnd="@dimen/margin_5dp"
+                android:background="@drawable/selector_background_button"
+                android:onClick="@{(v) -> handler.onClicked(v)}"
+                android:src="@drawable/ic_media_control_video_enabled" />
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginEnd="@dimen/fab_margin"
-            android:gravity="end|bottom"
-            android:orientation="vertical">
+        <ImageView
+            android:id="@+id/iv_mediaControl_moreOptions"
+            android:layout_width="@dimen/width_40dp"
+            android:layout_height="@dimen/height_40dp"
+            android:layout_alignTop="@+id/ll_mediaControl_container"
+            android:layout_marginStart="@dimen/margin_5dp"
+            android:layout_marginEnd="@dimen/margin_10dp"
+            android:background="@drawable/selector_background_button"
+            android:onClick="@{(v) -> handler.onClicked(v)}"
+            android:padding="5dp"
+            android:src="@drawable/ic_dots_horizontal"
+            app:layout_constraintBottom_toBottomOf="@+id/ll_mediaControl_container"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/ll_mediaControl_container" />
 
-            <androidx.appcompat.widget.AppCompatImageButton
-                android:id="@+id/local_video_image_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/fab_margin"
-                android:background="@drawable/roundbutton"
-                android:onClick="@{(v) -> handler.onClicked(v)}"
-                app:backgroundTint="@color/lobbyMediaControls"
-                app:srcCompat="@drawable/ic_videocam_white" />
+        <ImageView
+            android:id="@+id/iv_mediaControl_cameraSwitch"
+            android:layout_width="@dimen/width_40dp"
+            android:layout_height="@dimen/height_40dp"
+            android:layout_marginBottom="@dimen/margin_6dp"
+            android:background="@drawable/selector_background_button"
+            android:onClick="@{(v) -> handler.onClicked(v)}"
+            android:padding="@dimen/padding_6dp"
+            android:src="@drawable/ic_switch_camera_white"
+            app:layout_constraintBottom_toTopOf="@id/iv_mediaControl_moreOptions"
+            app:layout_constraintEnd_toEndOf="@+id/iv_mediaControl_moreOptions" />
 
-            <androidx.appcompat.widget.AppCompatImageButton
-                android:id="@+id/local_audio_image_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/fab_margin"
-                android:background="@drawable/roundbutton"
-                android:onClick="@{(v) -> handler.onClicked(v)}"
-                app:backgroundTint="@color/lobbyMediaControls"
-                app:srcCompat="@drawable/ic_mic_white" />
+        <ImageView
+            android:id="@+id/iv_mediaControl_screenShare"
+            android:layout_width="@dimen/width_40dp"
+            android:layout_height="@dimen/height_40dp"
+            android:layout_marginBottom="@dimen/margin_6dp"
+            android:background="@drawable/selector_background_button"
+            android:onClick="@{(v) -> handler.onClicked(v)}"
+            android:padding="@dimen/padding_6dp"
+            android:src="@drawable/ic_media_control_screen_share"
+            app:layout_constraintBottom_toTopOf="@id/iv_mediaControl_cameraSwitch"
+            app:layout_constraintEnd_toEndOf="@+id/iv_mediaControl_moreOptions" />
 
-            <androidx.appcompat.widget.AppCompatImageButton
-                android:id="@+id/disconnect"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/fab_margin"
-                android:background="@drawable/roundbutton"
-                android:onClick="@{(v) -> handler.onClicked(v)}"
-                android:visibility="gone"
-                app:backgroundTint="@android:color/holo_red_dark"
-                app:srcCompat="@drawable/ic_call_end_white" />
-        </LinearLayout>
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <ImageView
+            android:id="@+id/iv_mediaControl_audioOutput"
+            android:layout_width="@dimen/width_40dp"
+            android:layout_height="@dimen/height_40dp"
+            android:layout_marginBottom="@dimen/margin_6dp"
+            android:background="@drawable/selector_background_button"
+            android:onClick="@{(v) -> handler.onClicked(v)}"
+            android:padding="@dimen/padding_7dp"
+            android:src="@drawable/ic_media_control_audio_output"
+            app:layout_constraintBottom_toTopOf="@id/iv_mediaControl_screenShare"
+            app:layout_constraintEnd_toEndOf="@+id/iv_mediaControl_moreOptions" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/group_mediaControls_moreOptions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:constraint_referenced_ids="iv_mediaControl_screenShare,iv_mediaControl_audioOutput,iv_mediaControl_cameraSwitch" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

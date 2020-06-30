@@ -34,6 +34,7 @@ class ParticipantThumbView : ParticipantView {
 
     private fun init(context: Context) {
         binding = ParticipantViewThumbBinding.inflate(LayoutInflater.from(context), this, true)
+        setParticipantIdentity(identity)
         setParticipantState(state)
         setParticipantMirror(mirror)
         setParticipantScaleType(scaleType)

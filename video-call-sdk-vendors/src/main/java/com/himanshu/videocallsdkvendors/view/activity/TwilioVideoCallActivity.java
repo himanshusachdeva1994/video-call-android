@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -14,8 +15,6 @@ import android.media.AudioManager;
 import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -130,10 +129,6 @@ public class TwilioVideoCallActivity extends BaseActivity {
     private boolean isAudioMuted;
     private boolean isVideoMuted;
 
-    private MenuItem switchCameraMenuItem;
-    private MenuItem screenCaptureMenuItem;
-    private MenuItem speakerMenuItem;
-
     private CameraCaptureHelper cameraCapturer;
     private ScreenCapturer screenCapturer;
 
@@ -177,7 +172,6 @@ public class TwilioVideoCallActivity extends BaseActivity {
         }
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_twilio_video_call);
-        setSupportActionBar(binding.toolbar);
 
         initViewModel();
 
@@ -194,7 +188,10 @@ public class TwilioVideoCallActivity extends BaseActivity {
         participantController.setListener(participantClickListener());
 
         obtainVideoConstraints();
+
+        requestPermissions();
         viewModel.connectToRoom(authToken);
+        viewModel.getRoomEvents().observe(this, this::bindRoomEvents);
     }
 
     @Override
@@ -244,6 +241,8 @@ public class TwilioVideoCallActivity extends BaseActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == MEDIA_PROJECTION_REQUEST_CODE) {
             if (resultCode != Activity.RESULT_OK) {
+
+                setMediaControlOptionState(binding.ivMediaControlScreenShare, false);
                 Snackbar.make(binding.layoutContentRoom.primaryVideo,
                         R.string.screen_capture_permission_not_granted,
                         Snackbar.LENGTH_LONG)
@@ -319,19 +318,6 @@ public class TwilioVideoCallActivity extends BaseActivity {
             // remove remote participant thumb
             participantController.removeThumb(item);
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_video_call, menu);
-
-        switchCameraMenuItem = menu.findItem(R.id.switch_camera_menu_item);
-        speakerMenuItem = menu.findItem(R.id.speaker_menu_item);
-        screenCaptureMenuItem = menu.findItem(R.id.share_screen_menu_item);
-
-        requestPermissions();
-        viewModel.getRoomEvents().observe(this, this::bindRoomEvents);
-        return true;
     }
 
     private void initializeRoom() {
@@ -437,18 +423,20 @@ public class TwilioVideoCallActivity extends BaseActivity {
                     new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                             .setTitle(getString(R.string.room_screen_connection_failure_title))
                             .setMessage(getString(R.string.room_screen_connection_failure_message))
-                            .setNeutralButton("OK", null)
+                            .setNeutralButton("OK", (dialog, which) -> finish())
                             .show();
                     removeAllParticipants();
                     setAudioFocus(false);
                 }
                 if (roomEvent instanceof RoomEvent.ParticipantConnected) {
                     boolean renderAsPrimary = room.getRemoteParticipants().size() == 1;
+                    setRemoteThumbVisibility();
                     addParticipant(((RoomEvent.ParticipantConnected) roomEvent).getRemoteParticipant(), renderAsPrimary);
                 }
                 if (roomEvent instanceof RoomEvent.ParticipantDisconnected) {
                     RemoteParticipant remoteParticipant = ((RoomEvent.ParticipantDisconnected) roomEvent).getRemoteParticipant();
                     networkQualityLevels.remove(remoteParticipant.getSid());
+                    setRemoteThumbVisibility();
                     removeParticipant(remoteParticipant);
                 }
                 if (roomEvent instanceof RoomEvent.DominantSpeakerChanged) {
@@ -490,37 +478,20 @@ public class TwilioVideoCallActivity extends BaseActivity {
 
     private void updateUi(Room room, RoomEvent roomEvent) {
         int disconnectButtonState = View.GONE;
-        boolean screenCaptureMenuItemState = false;
 
         if (roomEvent instanceof RoomEvent.Connecting) {
             disconnectButtonState = View.VISIBLE;
         }
 
-        if (room != null) {
-            switch (room.getState()) {
-                case CONNECTED:
-                    disconnectButtonState = View.VISIBLE;
-                    screenCaptureMenuItemState = true;
-                    break;
-
-                case DISCONNECTED:
-                    screenCaptureMenuItemState = false;
-                    break;
-            }
+        if (room != null && room.getState() == CONNECTED) {
+            disconnectButtonState = View.VISIBLE;
         }
 
         // Check mute state
-        if (isAudioMuted) {
-            binding.localAudioImageButton.setImageResource(R.drawable.ic_mic_off_gray);
-        }
-        if (isVideoMuted) {
-            binding.localVideoImageButton.setImageResource(R.drawable.ic_videocam_off_gray);
-        }
+        setMediaControlOptionState(binding.ivMediaControlAudio, !isAudioMuted);
+        setMediaControlOptionState(binding.ivMediaControlVideo, !isVideoMuted);
 
-        binding.disconnect.setVisibility(disconnectButtonState);
-        if (screenCaptureMenuItem != null) {
-            screenCaptureMenuItem.setVisible(screenCaptureMenuItemState);
-        }
+        binding.ivMediaControlDisconnect.setVisibility(disconnectButtonState);
     }
 
     /**
@@ -620,8 +591,8 @@ public class TwilioVideoCallActivity extends BaseActivity {
             screenVideoTrack.release();
             localVideoTrackNames.remove(screenVideoTrack.getName());
             screenVideoTrack = null;
-            screenCaptureMenuItem.setIcon(R.drawable.ic_screen_share_white);
-            screenCaptureMenuItem.setTitle(R.string.share_screen);
+            binding.ivMediaControlScreenShare.setImageResource(R.drawable.ic_screen_share_white);
+            binding.ivMediaControlScreenShare.setTag(getString(R.string.share_screen));
         }
     }
 
@@ -814,7 +785,6 @@ public class TwilioVideoCallActivity extends BaseActivity {
                     remoteParticipant.getIdentity(),
                     remoteVideoTrackPublication.getTrackSid(),
                     twilioException.getMessage());
-            // TODO: Need design
             Snackbar.make(binding.layoutContentRoom.primaryVideo, "onVideoTrackSubscriptionFailed", Snackbar.LENGTH_LONG)
                     .show();
         }
@@ -898,7 +868,6 @@ public class TwilioVideoCallActivity extends BaseActivity {
                     remoteParticipant.getIdentity(),
                     remoteDataTrackPublication.getTrackSid(),
                     twilioException.getMessage());
-            // TODO: Need design
             Snackbar.make(binding.layoutContentRoom.primaryVideo, "onDataTrackSubscriptionFailed", Snackbar.LENGTH_LONG)
                     .show();
         }
@@ -1009,6 +978,8 @@ public class TwilioVideoCallActivity extends BaseActivity {
                 thumb.callOnClick();
             }
 
+            setRemoteThumbVisibility();
+
             // add existing room participants thumbs
             boolean isFirstParticipant = true;
             for (RemoteParticipant remoteParticipant : room.getRemoteParticipants()) {
@@ -1029,6 +1000,14 @@ public class TwilioVideoCallActivity extends BaseActivity {
                     }
                 }
             }
+        }
+    }
+
+    private void setRemoteThumbVisibility() {
+        if (room.getRemoteParticipants().size() == 0) {
+            binding.layoutContentRoom.remoteVideoThumbnails.setVisibility(View.GONE);
+        } else {
+            binding.layoutContentRoom.remoteVideoThumbnails.setVisibility(View.VISIBLE);
         }
     }
 
@@ -1151,40 +1130,6 @@ public class TwilioVideoCallActivity extends BaseActivity {
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId = item.getItemId();
-
-        if (itemId == R.id.switch_camera_menu_item) {
-            switchCamera();
-            return true;
-        } else if (itemId == R.id.speaker_menu_item) {
-            if (audioManager.isSpeakerphoneOn()) {
-                audioManager.setSpeakerphoneOn(false);
-                item.setIcon(R.drawable.ic_phonelink_ring_white);
-            } else {
-                audioManager.setSpeakerphoneOn(true);
-                item.setIcon(R.drawable.ic_volume_up_white);
-            }
-            return true;
-        } else if (itemId == R.id.share_screen_menu_item) {
-            String shareScreen = getString(R.string.share_screen);
-
-            if (item.getTitle().equals(shareScreen)) {
-                if (screenCapturer == null) {
-                    requestScreenCapturePermission();
-                } else {
-                    startScreenCapture();
-                }
-            } else {
-                stopScreenCapture();
-            }
-            return true;
-        } else {
-            return super.onOptionsItemSelected(item);
-        }
-    }
-
     private void requestScreenCapturePermission() {
         Timber.d("Requesting permission to capture screen");
         MediaProjectionManager mediaProjectionManager =
@@ -1200,8 +1145,8 @@ public class TwilioVideoCallActivity extends BaseActivity {
         screenVideoTrack = LocalVideoTrack.create(this, true, screenCapturer, SCREEN_TRACK_NAME);
 
         if (screenVideoTrack != null) {
-            screenCaptureMenuItem.setIcon(R.drawable.ic_stop_screen_share_white);
-            screenCaptureMenuItem.setTitle(R.string.stop_screen_share);
+            binding.ivMediaControlScreenShare.setImageResource(R.drawable.ic_stop_screen_share_white);
+            binding.ivMediaControlScreenShare.setTag(getString(R.string.stop_screen_share));
             localVideoTrackNames.put(screenVideoTrack.getName(), getString(R.string.screen_video_track));
 
             if (localParticipant != null) {
@@ -1290,15 +1235,40 @@ public class TwilioVideoCallActivity extends BaseActivity {
     }
 
     @Override
-    public void onClickEvent(@Nullable View view) {
+    public void onClickEvent(View view) {
         super.onClickEvent(view);
 
         try {
+            setMediaControlOptionState((ImageView) view, !view.isSelected());
             int id = view.getId();
-            if (id == R.id.local_audio_image_button) {
+            if (id == R.id.iv_mediaControl_audio) {
                 toggleLocalAudio();
-            } else if (id == R.id.local_video_image_button) {
+            } else if (id == R.id.iv_mediaControl_video) {
                 toggleLocalVideo();
+            } else if (id == R.id.iv_mediaControl_moreOptions) {
+                binding.groupMediaControlsMoreOptions.setVisibility(binding.ivMediaControlMoreOptions.isSelected() ? View.VISIBLE : View.GONE);
+            } else if (id == R.id.iv_mediaControl_cameraSwitch) {
+                switchCamera();
+            } else if (id == R.id.iv_mediaControl_audioOutput) {
+                if (audioManager.isSpeakerphoneOn()) {
+                    audioManager.setSpeakerphoneOn(false);
+                    binding.ivMediaControlAudioOutput.setImageResource(R.drawable.ic_phonelink_ring_white);
+                } else {
+                    audioManager.setSpeakerphoneOn(true);
+                    binding.ivMediaControlAudioOutput.setImageResource(R.drawable.ic_volume_up_white);
+                }
+            } else if (id == R.id.iv_mediaControl_screenShare) {
+                String shareScreen = getString(R.string.share_screen);
+
+                if (view.getTag() == null || view.getTag().equals(shareScreen)) {
+                    if (screenCapturer == null) {
+                        requestScreenCapturePermission();
+                    } else {
+                        startScreenCapture();
+                    }
+                } else {
+                    stopScreenCapture();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1306,20 +1276,20 @@ public class TwilioVideoCallActivity extends BaseActivity {
     }
 
     private void toggleLocalAudio() {
-        int icon;
+//        int icon;
         if (localAudioTrack == null) {
             isAudioMuted = false;
             localAudioTrack = LocalAudioTrack.create(this, true, MICROPHONE_TRACK_NAME);
 
             if (localAudioTrack != null) {
                 // enable audio settings
-                speakerMenuItem.setVisible(localAudioTrack.isEnabled());
+                binding.ivMediaControlAudioOutput.setVisibility(localAudioTrack.isEnabled() ? View.VISIBLE : View.GONE);
 
                 if (localParticipant != null) {
                     localParticipant.publishTrack(localAudioTrack);
                 }
             }
-            icon = R.drawable.ic_mic_white;
+//            icon = R.drawable.ic_mic_white;
         } else {
             isAudioMuted = true;
             if (localParticipant != null) {
@@ -1329,10 +1299,10 @@ public class TwilioVideoCallActivity extends BaseActivity {
             localAudioTrack = null;
 
             // disable audio settings
-            speakerMenuItem.setVisible(false);
-            icon = R.drawable.ic_mic_off_gray;
+            binding.ivMediaControlAudioOutput.setVisibility(View.GONE);
+//            icon = R.drawable.ic_mic_off_gray;
         }
-        binding.localAudioImageButton.setImageResource(icon);
+        setMediaControlOptionState(binding.ivMediaControlAudio, localAudioTrack != null);
     }
 
     private void toggleLocalVideo() {
@@ -1351,7 +1321,7 @@ public class TwilioVideoCallActivity extends BaseActivity {
 
             if (cameraVideoTrack != null) {
                 // enable video settings
-                switchCameraMenuItem.setVisible(cameraVideoTrack.isEnabled());
+                binding.ivMediaControlCameraSwitch.setVisibility(cameraVideoTrack.isEnabled() ? View.VISIBLE : View.GONE);
 
                 if (localParticipant != null) {
                     localParticipant.publishTrack(cameraVideoTrack);
@@ -1369,7 +1339,7 @@ public class TwilioVideoCallActivity extends BaseActivity {
             cameraVideoTrack = null;
 
             // disable video settings
-            switchCameraMenuItem.setVisible(false);
+            binding.ivMediaControlCameraSwitch.setVisibility(View.GONE);
         }
 
         if (room != null && room.getState() == CONNECTED) {
@@ -1394,11 +1364,13 @@ public class TwilioVideoCallActivity extends BaseActivity {
             renderLocalParticipantStub();
         }
 
+        setMediaControlOptionState(binding.ivMediaControlVideo, cameraVideoTrack != null);
+
         // update toggle button icon
-        binding.localVideoImageButton.setImageResource(
-                cameraVideoTrack != null
-                        ? R.drawable.ic_videocam_white
-                        : R.drawable.ic_videocam_off_gray);
+//        binding.ivMediaControlVideo.setImageResource(
+//                cameraVideoTrack != null
+//                        ? R.drawable.ic_videocam_white
+//                        : R.drawable.ic_videocam_off_gray);
     }
 
     private void toggleLocalAudioTrackState() {
@@ -1441,9 +1413,43 @@ public class TwilioVideoCallActivity extends BaseActivity {
         new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                 .setTitle(getString(R.string.dialog_title_meeting_end))
                 .setPositiveButton(R.string.dialog_positive, (dialog, which) -> {
-                    viewModel.disconnect();
+                    if (room.getState() == CONNECTED) {
+                        viewModel.disconnect();
+                    } else {
+                        finish();
+                    }
                 })
                 .setNegativeButton(R.string.dialog_negative, null)
                 .show();
+    }
+
+    private void setMediaControlOptionState(ImageView imageView, boolean isSelected) {
+        int viewId = imageView.getId();
+
+        /*if (isSelected) {
+            imageView.setBackgroundColor(ContextCompat.getColor(this, R.color.skypeLobbyMediaControlBlue));
+        } else {
+            imageView.setBackgroundColor(ContextCompat.getColor(this, R.color.skypeLobbyMediaControlGrey));
+        }*/
+
+        int resourceId = 0;
+        if (viewId == R.id.iv_mediaControl_audio) {
+            resourceId = isSelected ? R.drawable.ic_media_control_mute : R.drawable.ic_media_control_unmute;
+        } else if (viewId == R.id.iv_mediaControl_video) {
+            resourceId = isSelected ? R.drawable.ic_media_control_video_enabled : R.drawable.ic_media_control_video_disabled;
+        } /*else if (viewId == R.id.iv_mediaControl_moreOptions) {
+            resourceId = isSelected ? R.drawable.ic_media_control_more_options_enabled : R.drawable.ic_media_control_more_options_disabled;
+        } else if (viewId == R.id.iv_mediaControl_cameraSwitch) {
+            resourceId = isSelected ? R.drawable.ic_media_control_camera_switch_enabled : R.drawable.ic_media_control_camera_switch_disabled;
+        } else if (viewId == R.id.iv_mediaControl_screenShare) {
+            resourceId = isSelected ? R.drawable.ic_media_control_screen_share_enabled : R.drawable.ic_media_control_screen_share_disabled;
+        } else if (viewId == R.id.iv_mediaControl_audioOutput) {
+            resourceId = isSelected ? R.drawable.ic_media_control_audio_output_enabled : R.drawable.ic_media_control_audio_output_disabled;
+        }*/
+
+        imageView.setSelected(isSelected);
+        if (resourceId != 0) {
+            imageView.setImageResource(resourceId);
+        }
     }
 }

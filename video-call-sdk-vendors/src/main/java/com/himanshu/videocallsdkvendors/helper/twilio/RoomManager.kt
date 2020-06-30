@@ -32,8 +32,6 @@ class RoomManager(private val context: Context,
     }
 
     suspend fun connectToRoom(
-            identity: String,
-            roomName: String,
             authToken: String,
             isNetworkQualityEnabled: Boolean
     ) {
@@ -52,7 +50,6 @@ class RoomManager(private val context: Context,
                         NetworkQualityVerbosity.NETWORK_QUALITY_VERBOSITY_MINIMAL)
 
                 val connectOptionsBuilder = ConnectOptions.Builder(authToken)
-                        .roomName(roomName)
                         .enableAutomaticSubscription(enableAutomaticTrackSubscription)
                         .enableDominantSpeaker(enableDominantSpeaker)
                         .enableInsights(enableInsights)

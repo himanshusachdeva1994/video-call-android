@@ -26,7 +26,7 @@ abstract class BaseViewModel(application: Application) : AndroidViewModel(applic
         this.callback = callback
     }
 
-    open fun onClicked(view: View?) {
+    open fun onClicked(view: View) {
         if (callback != null) {
             callback!!.onClickEvent(view)
         }

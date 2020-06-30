@@ -8,5 +8,5 @@ import android.view.View
  * @email : himanshu.sachdeva1994@gmail.com
  */
 interface DataBindingViewClickCallbacks {
-    fun onClickEvent(view: View?)
+    fun onClickEvent(view: View)
 }

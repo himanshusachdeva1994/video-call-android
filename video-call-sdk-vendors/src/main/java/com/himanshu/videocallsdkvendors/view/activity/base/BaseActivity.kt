@@ -30,5 +30,5 @@ abstract class BaseActivity : AppCompatActivity(), DataBindingViewClickCallbacks
         super.onCreate(savedInstanceState)
     }
 
-    override fun onClickEvent(@Nullable view: View?) {}
+    override fun onClickEvent(@Nullable view: View) {}
 }

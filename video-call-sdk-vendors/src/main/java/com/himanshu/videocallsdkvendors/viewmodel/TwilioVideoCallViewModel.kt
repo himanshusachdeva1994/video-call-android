@@ -17,16 +17,14 @@ import kotlinx.coroutines.launch
  */
 class TwilioVideoCallViewModel(application: Application, private val roomManager: RoomManager) : BaseViewModel(application) {
 
-    val identity: String = "Himanshu"
-    val roomName: String = "room1"
+//    lateinit var identity: String
+//    lateinit var roomName: String
 
     val roomEvents: LiveData<RoomEvent?> = roomManager.viewEvents
 
     fun connectToRoom(authToken: String) =
             viewModelScope.launch {
                 roomManager.connectToRoom(
-                        identity,
-                        roomName,
                         authToken,
                         false)
             }
@@ -35,11 +33,10 @@ class TwilioVideoCallViewModel(application: Application, private val roomManager
         roomManager.disconnect()
     }
 
-    override fun onClicked(view: View?) {
-        when (view?.id) {
-            R.id.disconnect -> {
+    override fun onClicked(view: View) {
+        when (view.id) {
+            R.id.iv_mediaControl_disconnect -> {
                 disconnect()
-                super.onClicked(view)
             }
             else -> {
                 super.onClicked(view)

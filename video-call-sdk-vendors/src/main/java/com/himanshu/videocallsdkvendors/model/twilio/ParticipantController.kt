@@ -293,7 +293,10 @@ class ParticipantController(
         }
         primaryItem = newItem
         primaryView.identity = primaryItem!!.identity!!
-        primaryView.showIdentityBadge(true)
+
+        // Identity not to be shown as per UI shared
+//        primaryView.showIdentityBadge(true)
+        primaryView.showIdentityBadge(false)
         primaryView.setMuted(primaryItem!!.isMuted)
         primaryView.setParticipantMirror(mirror)
         if (primaryItem!!.videoTrack != null) {
@@ -310,7 +313,6 @@ class ParticipantController(
      */
     fun removePrimary() {
         removeRender(primaryItem!!.videoTrack, primaryView)
-        // TODO: temp state
         primaryView.setParticipantState(NO_VIDEO)
         primaryItem = null
     }
@@ -346,7 +348,7 @@ class ParticipantController(
 
     private fun createThumb(item: Item): ParticipantView {
         val view: ParticipantView = ParticipantThumbView(thumbsViewContainer.context)
-        view.identity = item.identity!!
+        view.setParticipantIdentity(item.identity!!)
         view.setMuted(item.isMuted)
         view.setParticipantMirror(item.isMirror)
         view.setOnClickListener { _: View? ->

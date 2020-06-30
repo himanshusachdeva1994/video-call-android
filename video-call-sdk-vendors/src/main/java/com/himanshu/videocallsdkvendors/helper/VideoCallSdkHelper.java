@@ -2,6 +2,7 @@ package com.himanshu.videocallsdkvendors.helper;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.widget.Toast;
 
 import com.himanshu.videocallsdkvendors.constants.VideoSdkVendors;
 import com.himanshu.videocallsdkvendors.view.activity.TwilioVideoCallActivity;
@@ -45,6 +46,11 @@ public class VideoCallSdkHelper {
     public void init() {
         if (sdkVendor == null) {
             throw new Error("SDK Vendor not specified");
+        }
+
+        if (authToken == null || authToken.isEmpty()) {
+            Toast.makeText(activity, "Auth Token not specified", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         if (sdkVendor == VideoSdkVendors.TWILIO) {
