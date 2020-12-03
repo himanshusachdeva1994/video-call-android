@@ -21,9 +21,11 @@
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar.Lobby" />
 
-        <service android:name=".services.twilio.TwilioVideoService" />
+        <service
+            android:name=".services.twilio.TwilioVideoService"
+            android:foregroundServiceType="mediaProjection" />
 
-        <receiver android:name=".broadcast.CallReceiver" >
+        <receiver android:name=".broadcast.CallReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.PHONE_STATE" />
                 <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
