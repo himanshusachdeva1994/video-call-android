@@ -14,7 +14,10 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
-    <application android:name=".VideoApplication">
+    <application
+        android:name=".VideoApplication"
+        android:requestLegacyExternalStorage="true">
+
         <activity
             android:name=".view.activity.TwilioVideoCallActivity"
             android:configChanges="orientation|screenSize"
