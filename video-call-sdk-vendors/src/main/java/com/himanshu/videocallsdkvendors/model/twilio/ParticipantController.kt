@@ -1,6 +1,5 @@
 package com.himanshu.videocallsdkvendors.model.twilio
 
-import android.view.View
 import android.view.ViewGroup
 import com.himanshu.videocallsdkvendors.annotations.twilio.NO_VIDEO
 import com.himanshu.videocallsdkvendors.annotations.twilio.SELECTED
@@ -104,15 +103,17 @@ class ParticipantController(
      */
     fun updateThumb(sid: String, oldVideo: VideoTrack?, newVideo: VideoTrack?) {
         val target = findItem(sid, oldVideo)
-        if (target != null) {
+        target?.let {
             val view = getThumb(sid, oldVideo)
-            removeRender(target.videoTrack, view)
-            target.videoTrack = newVideo
-            if (target.videoTrack != null) {
-                view!!.setParticipantState(VIDEO)
-                target.videoTrack!!.addRenderer(view)
-            } else {
-                view!!.setParticipantState(NO_VIDEO)
+            view?.let {
+                removeRender(target.videoTrack, it)
+                target.videoTrack = newVideo
+                if (target.videoTrack != null) {
+                    it.setParticipantState(VIDEO)
+                    target.videoTrack?.addRenderer(it)
+                } else {
+                    it.setParticipantState(NO_VIDEO)
+                }
             }
         }
     }
@@ -126,12 +127,17 @@ class ParticipantController(
      */
     fun updateThumb(sid: String, videoTrack: VideoTrack?, @State state: Int) {
         val target = findItem(sid, videoTrack)
-        if (target != null) {
+        target?.let {
             val view = getThumb(sid, videoTrack) as ParticipantThumbView?
-            view!!.setParticipantState(state)
-            when (state) {
-                NO_VIDEO, SELECTED -> removeRender(target.videoTrack, view)
-                VIDEO -> target.videoTrack!!.addRenderer(view)
+            view?.let {
+                it.setParticipantState(state)
+
+                target.videoTrack?.let { itVideoTrack ->
+                    when (state) {
+                        NO_VIDEO, SELECTED -> removeRender(itVideoTrack, view)
+                        VIDEO -> itVideoTrack.addRenderer(it)
+                    }
+                }
             }
         }
     }
@@ -145,10 +151,10 @@ class ParticipantController(
      */
     fun updateThumb(sid: String, videoTrack: VideoTrack?, mirror: Boolean) {
         val target = findItem(sid, videoTrack)
-        if (target != null) {
+        target?.let {
             val view = getThumb(sid, videoTrack) as ParticipantThumbView?
             target.isMirror = mirror
-            view!!.setParticipantMirror(target.isMirror)
+            view?.setParticipantMirror(target.isMirror)
         }
     }
 
@@ -160,7 +166,7 @@ class ParticipantController(
      */
     fun updateThumbs(sid: String, muted: Boolean) {
         for ((key, value) in thumbs) {
-            if (key!!.sid == sid) {
+            if (key?.sid == sid) {
                 key.isMuted = muted
                 value.setMuted(muted)
             }
@@ -195,7 +201,7 @@ class ParticipantController(
      */
     fun removeThumb(sid: String, videoTrack: VideoTrack?) {
         val target = findItem(sid, videoTrack)
-        if (target != null) {
+        target?.let {
             val view = getThumb(sid, videoTrack)
             removeRender(target.videoTrack, view)
             thumbsViewContainer.removeView(view)
@@ -211,7 +217,7 @@ class ParticipantController(
     fun removeThumbs(sid: String) {
         val deleteKeys = ArrayList<Item?>()
         for ((key, value) in thumbs) {
-            if (key!!.sid == sid) {
+            if (key?.sid == sid) {
                 deleteKeys.add(key)
                 thumbsViewContainer.removeView(value)
                 val remoteVideoTrack = key.videoTrack
@@ -232,7 +238,7 @@ class ParticipantController(
      */
     fun removeOrEmptyThumb(sid: String, identity: String, videoTrack: VideoTrack?) {
         val thumbsCount = getThumbs(sid).size
-        if (thumbsCount > 1 || thumbsCount == 1 && primaryItem!!.sid == sid) {
+        if (thumbsCount > 1 || thumbsCount == 1 && primaryItem?.sid == sid) {
             removeThumb(sid, videoTrack)
         } else if (thumbsCount == 0) {
             addThumb(sid, identity)
@@ -292,19 +298,23 @@ class ParticipantController(
             removeRender(old.videoTrack, primaryView)
         }
         primaryItem = newItem
-        primaryView.identity = primaryItem!!.identity!!
+        primaryItem?.let {
+            it.identity?.let {
+                primaryView.identity = it
+            }
 
-        // Identity not to be shown as per UI shared
+            // Identity not to be shown as per UI shared
 //        primaryView.showIdentityBadge(true)
-        primaryView.showIdentityBadge(false)
-        primaryView.setMuted(primaryItem!!.isMuted)
-        primaryView.setParticipantMirror(mirror)
-        if (primaryItem!!.videoTrack != null) {
-            removeRender(primaryItem!!.videoTrack, primaryView)
-            primaryView.setParticipantState(VIDEO)
-            primaryItem!!.videoTrack!!.addRenderer(primaryView)
-        } else {
-            primaryView.setParticipantState(NO_VIDEO)
+            primaryView.showIdentityBadge(false)
+            primaryView.setMuted(it.isMuted)
+            primaryView.setParticipantMirror(mirror)
+            if (it.videoTrack != null) {
+                removeRender(it.videoTrack, primaryView)
+                primaryView.setParticipantState(VIDEO)
+                it.videoTrack?.addRenderer(primaryView)
+            } else {
+                primaryView.setParticipantState(NO_VIDEO)
+            }
         }
     }
 
@@ -312,7 +322,7 @@ class ParticipantController(
      * Remove primary participant.
      */
     fun removePrimary() {
-        removeRender(primaryItem!!.videoTrack, primaryView)
+        removeRender(primaryItem?.videoTrack, primaryView)
         primaryView.setParticipantState(NO_VIDEO)
         primaryItem = null
     }
@@ -333,13 +343,11 @@ class ParticipantController(
         }
     }
 
-    private fun hasThumb(sid: String, videoTrack: VideoTrack?): Boolean {
-        return getThumb(sid, videoTrack) != null
-    }
+    private fun hasThumb(sid: String, videoTrack: VideoTrack?) = getThumb(sid, videoTrack) != null
 
     private fun findItem(sid: String, videoTrack: VideoTrack?): Item? {
         for (item in thumbs.keys) {
-            if (item!!.sid == sid && item.videoTrack === videoTrack) {
+            if (item?.sid == sid && item.videoTrack === videoTrack) {
                 return item
             }
         }
@@ -348,16 +356,14 @@ class ParticipantController(
 
     private fun createThumb(item: Item): ParticipantView {
         val view: ParticipantView = ParticipantThumbView(thumbsViewContainer.context)
-        view.setParticipantIdentity(item.identity!!)
+        view.setParticipantIdentity(item.identity ?: "")
         view.setMuted(item.isMuted)
         view.setParticipantMirror(item.isMirror)
-        view.setOnClickListener { _: View? ->
-            if (listener != null) {
-                listener!!.onThumbClick(item)
-            }
+        view.setOnClickListener {
+            listener?.onThumbClick(item)
         }
         if (item.videoTrack != null) {
-            item.videoTrack!!.addRenderer(view)
+            item.videoTrack?.addRenderer(view)
             view.setParticipantState(VIDEO)
         } else {
             view.setParticipantState(NO_VIDEO)
@@ -368,7 +374,7 @@ class ParticipantController(
     private fun getThumbs(sid: String): ArrayList<ParticipantView> {
         val views = ArrayList<ParticipantView>()
         for ((key, value) in thumbs) {
-            if (key!!.sid == sid) {
+            if (key?.sid == sid) {
                 views.add(value)
             }
         }
@@ -379,7 +385,9 @@ class ParticipantController(
         if (videoTrack == null || !videoTrack.renderers.contains(view)) {
             return
         }
-        videoTrack.removeRenderer(view!!)
+        view?.let {
+            videoTrack.removeRenderer(view)
+        }
     }
 
     /**

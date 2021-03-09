@@ -15,7 +15,5 @@ class RoomViewModelFactory(private val application: Application,
                            private val roomManager: RoomManager)
     : ViewModelProvider.Factory {
 
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return TwilioVideoCallViewModel(application, roomManager) as T
-    }
+    override fun <T : ViewModel> create(modelClass: Class<T>): T = TwilioVideoCallViewModel(application, roomManager) as T
 }

@@ -27,13 +27,11 @@ abstract class BaseViewModel(application: Application) : AndroidViewModel(applic
     }
 
     open fun onClicked(view: View) {
-        if (callback != null) {
-            callback!!.onClickEvent(view)
-        }
+        callback?.onClickEvent(view)
     }
 
     private fun attachRepositoryToastMessageLiveData(toastMessage: LiveData<String>?) {
-        if (toastMessage != null) {
+        toastMessage?.let {
             combinedToastMessages.addSource(toastMessage) { value: String -> combinedToastMessages.setValue(value) }
         }
     }

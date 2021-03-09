@@ -9,7 +9,6 @@ import androidx.core.content.ContextCompat
 import com.himanshu.videocallsdkvendors.R
 import com.himanshu.videocallsdkvendors.annotations.twilio.NO_VIDEO
 import com.himanshu.videocallsdkvendors.annotations.twilio.SELECTED
-import com.himanshu.videocallsdkvendors.annotations.twilio.State
 import com.himanshu.videocallsdkvendors.annotations.twilio.VIDEO
 import com.himanshu.videocallsdkvendors.databinding.ParticipantViewThumbBinding
 import com.twilio.video.VideoScaleType
@@ -44,54 +43,60 @@ class ParticipantThumbView : ParticipantView {
         super.setParticipantState(state)
         when (state) {
             VIDEO -> {
-                binding!!.participantSelectedLayout.visibility = View.GONE
-                binding!!.participantStubImage.visibility = View.GONE
-                binding!!.participantSelectedIdentity.visibility = View.GONE
-                binding!!.participantVideoLayout.visibility = View.VISIBLE
-                binding!!.participantVideoIdentity.visibility = View.VISIBLE
-                binding!!.participantVideo.visibility = View.VISIBLE
+                binding?.apply {
+                    participantSelectedLayout.visibility = View.GONE
+                    participantStubImage.visibility = View.GONE
+                    participantSelectedIdentity.visibility = View.GONE
+                    participantVideoLayout.visibility = View.VISIBLE
+                    participantVideoIdentity.visibility = View.VISIBLE
+                    participantVideo.visibility = View.VISIBLE
+                }
             }
             NO_VIDEO, SELECTED -> {
-                binding!!.participantVideoLayout.visibility = View.GONE
-                binding!!.participantVideoIdentity.visibility = View.GONE
-                binding!!.participantVideo.visibility = View.GONE
-                binding!!.participantSelectedLayout.visibility = View.VISIBLE
-                binding!!.participantStubImage.visibility = View.VISIBLE
-                binding!!.participantSelectedIdentity.visibility = View.VISIBLE
+                binding?.apply {
+                    participantVideoLayout.visibility = View.GONE
+                    participantVideoIdentity.visibility = View.GONE
+                    participantVideo.visibility = View.GONE
+                    participantSelectedLayout.visibility = View.VISIBLE
+                    participantStubImage.visibility = View.VISIBLE
+                    participantSelectedIdentity.visibility = View.VISIBLE
+                }
             }
             else -> {
             }
         }
         val resId: Int = if (state == SELECTED) R.drawable.participant_selected_background else R.drawable.participant_background
-        binding!!.participantSelectedLayout.background = ContextCompat.getDrawable(context, resId)
+        binding?.participantSelectedLayout?.background = ContextCompat.getDrawable(context, resId)
     }
 
     override fun setParticipantIdentity(identity: String) {
         super.setParticipantIdentity(identity)
-        binding!!.participantVideoIdentity.text = identity
-        binding!!.participantSelectedIdentity.text = identity
+        binding?.apply {
+            participantVideoIdentity.text = identity
+            participantSelectedIdentity.text = identity
+        }
     }
 
     override fun setParticipantMirror(mirror: Boolean) {
         super.setParticipantMirror(mirror)
-        binding!!.participantVideo.mirror = this.mirror
+        binding?.participantVideo?.mirror = this.mirror
     }
 
     override fun setParticipantScaleType(scaleType: Int) {
         super.setParticipantScaleType(scaleType)
-        binding!!.participantVideo.videoScaleType = VideoScaleType.values()[this.scaleType]
+        binding?.participantVideo?.videoScaleType = VideoScaleType.values()[this.scaleType]
     }
 
     override fun setMuted(muted: Boolean) {
-        binding!!.participantNoAudio.visibility = if (muted) View.VISIBLE else View.GONE
+        binding?.participantNoAudio?.visibility = if (muted) View.VISIBLE else View.GONE
     }
 
     override fun setSpeakerIconVisibility(isVisible: Boolean) {
-        binding!!.dominantSpeakerImg.visibility = if (isVisible) View.VISIBLE else View.GONE
+        binding?.dominantSpeakerImg?.visibility = if (isVisible) View.VISIBLE else View.GONE
     }
 
-    override val networkQualityImage: ImageView
-        get() = binding!!.networkQualityLevelImg
+    override val networkQualityImage: ImageView?
+        get() = binding?.networkQualityLevelImg
 
     override val videoView: VideoTextureView
         get() = binding!!.participantVideo

@@ -100,9 +100,9 @@ public class TwilioVideoCallActivity extends BaseActivity {
     // because that information is unknown until room connection is fully established
     private static final String LOCAL_PARTICIPANT_STUB_SID = "";
 
-    private AspectRatio aspectRatio = ASPECT_RATIO_16_9;
-    private VideoDimensions videoDimensionMin = VideoDimensions.CIF_VIDEO_DIMENSIONS;
-    private VideoDimensions videoDimensionMax = VideoDimensions.HD_720P_VIDEO_DIMENSIONS;
+    private final AspectRatio aspectRatio = ASPECT_RATIO_16_9;
+    private final VideoDimensions videoDimensionMin = VideoDimensions.CIF_VIDEO_DIMENSIONS;
+    private final VideoDimensions videoDimensionMax = VideoDimensions.HD_720P_VIDEO_DIMENSIONS;
     private int fpsMin = 0;
     private int fpsMax = 30;
 
