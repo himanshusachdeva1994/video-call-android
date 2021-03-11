@@ -15,7 +15,8 @@ import kotlinx.coroutines.launch
  * @created : 13-May-2020
  * @email : himanshu.sachdeva1994@gmail.com
  */
-class TwilioVideoCallViewModel(application: Application, private val roomManager: RoomManager) : BaseViewModel(application) {
+class TwilioVideoCallViewModel(application: Application,
+                               private val roomManager: RoomManager) : BaseViewModel(application) {
 
 //    lateinit var identity: String
 //    lateinit var roomName: String
@@ -29,7 +30,7 @@ class TwilioVideoCallViewModel(application: Application, private val roomManager
                         false)
             }
 
-    public fun disconnect() {
+    fun disconnect() {
         roomManager.disconnect()
     }
 
@@ -44,7 +45,5 @@ class TwilioVideoCallViewModel(application: Application, private val roomManager
         }
     }
 
-    override fun setRepositoryToastMessage(): LiveData<String>? {
-        return null
-    }
+    override fun setRepositoryToastMessage(): LiveData<String>? = null
 }

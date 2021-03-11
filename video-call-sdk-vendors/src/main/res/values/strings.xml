@@ -31,4 +31,5 @@
     <string name="dialog_positive">Yes</string>
     <string name="dialog_negative">No</string>
     <string name="dialog_title_meeting_end">This will end the current meeting. Are you sure?</string>
+    <string name="permissions_required">Camera, Microphone, and Writing to External Storage permissions are required. Please enable them in App Settings.</string>
 </resources>

@@ -9,10 +9,17 @@ import android.widget.FrameLayout;
 
 import static android.graphics.Path.Direction.CCW;
 
+/**
+ * @author : Himanshu Sachdeva
+ * @created : 30-Jun-2020
+ * @email : himanshu.sachdeva1994@gmail.com
+ * This file has been copied from the SDK example shared by Twilio
+ */
 public class RoundedFrameLayout extends FrameLayout {
-    private float mRadius;
-    private Path mPath = new Path();
-    private RectF mRect = new RectF();
+
+    private final float mRadius;
+    private final Path mPath = new Path();
+    private final RectF mRect = new RectF();
 
     public RoundedFrameLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -43,7 +50,6 @@ public class RoundedFrameLayout extends FrameLayout {
         mPath.reset();
         mPath.addCircle(centerX, centerY, Math.min(centerX, centerY), Path.Direction.CW);
         mPath.close();
-
     }
 
     @Override

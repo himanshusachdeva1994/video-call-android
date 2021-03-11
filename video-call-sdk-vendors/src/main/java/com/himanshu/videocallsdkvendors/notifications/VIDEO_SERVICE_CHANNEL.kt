@@ -11,14 +11,15 @@ import androidx.core.app.NotificationCompat
 import com.himanshu.videocallsdkvendors.R
 import com.himanshu.videocallsdkvendors.view.activity.TwilioVideoCallActivity
 
-private const val VIDEO_SERVICE_CHANNEL = "VIDEO_SERVICE_CHANNEL"
-const val ONGOING_NOTIFICATION_ID = 1
-
 /**
  * @author : Himanshu Sachdeva
  * @created : 12-May-2020
  * @email : himanshu.sachdeva1994@gmail.com
  */
+
+private const val VIDEO_SERVICE_CHANNEL = "VIDEO_SERVICE_CHANNEL"
+const val ONGOING_NOTIFICATION_ID = 1
+
 class RoomNotification(private val context: Context) {
 
     private val pendingIntent

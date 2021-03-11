@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -33,6 +32,7 @@ import com.himanshu.videocallsdkvendors.helper.twilio.CameraCaptureHelper;
 import com.himanshu.videocallsdkvendors.helper.twilio.RoomManager;
 import com.himanshu.videocallsdkvendors.model.twilio.ParticipantController;
 import com.himanshu.videocallsdkvendors.model.twilio.RoomEvent;
+import com.himanshu.videocallsdkvendors.util.GlobalUtil;
 import com.himanshu.videocallsdkvendors.view.activity.base.BaseActivity;
 import com.himanshu.videocallsdkvendors.view.custom.twilio.ParticipantPrimaryView;
 import com.himanshu.videocallsdkvendors.view.custom.twilio.ParticipantView;
@@ -61,6 +61,8 @@ import com.twilio.video.TwilioException;
 import com.twilio.video.VideoConstraints;
 import com.twilio.video.VideoDimensions;
 import com.twilio.video.VideoTrack;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.List;
@@ -121,6 +123,9 @@ public class TwilioVideoCallActivity extends BaseActivity {
     private boolean restoreLocalVideoCameraTrack = false;
     private LocalVideoTrack screenVideoTrack;
 
+    private final String[] requiredPermissionsForVideoCall = GlobalUtil.getPermissionListForVideoCall();
+    private boolean isVideoCallStarted;
+
     /**
      * Coordinates participant thumbs and primary participant rendering.
      */
@@ -132,8 +137,8 @@ public class TwilioVideoCallActivity extends BaseActivity {
     private CameraCaptureHelper cameraCapturer;
     private ScreenCapturer screenCapturer;
 
-    private Map<String, String> localVideoTrackNames = new HashMap<>();
-    private Map<String, NetworkQualityLevel> networkQualityLevels = new HashMap<>();
+    private final Map<String, String> localVideoTrackNames = new HashMap<>();
+    private final Map<String, NetworkQualityLevel> networkQualityLevels = new HashMap<>();
 
     private final ScreenCapturer.Listener screenCapturerListener =
             new ScreenCapturer.Listener() {
@@ -175,6 +180,11 @@ public class TwilioVideoCallActivity extends BaseActivity {
 
         initViewModel();
 
+        requestPermissions();
+        viewModel.getRoomEvents().observe(this, this::bindRoomEvents);
+    }
+
+    private void initiateVideoCall() {
         // Setup Audio
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         if (audioManager != null) {
@@ -187,11 +197,11 @@ public class TwilioVideoCallActivity extends BaseActivity {
                 binding.layoutContentRoom.primaryVideo);
         participantController.setListener(participantClickListener());
 
+        setupLocalMedia();
+
         obtainVideoConstraints();
 
-        requestPermissions();
         viewModel.connectToRoom(authToken);
-        viewModel.getRoomEvents().observe(this, this::bindRoomEvents);
     }
 
     @Override
@@ -397,82 +407,88 @@ public class TwilioVideoCallActivity extends BaseActivity {
     }
 
     private void bindRoomEvents(RoomEvent roomEvent) {
-        if (roomEvent != null) {
-            this.room = roomEvent.getRoom();
-            if (room != null) {
-                requestPermissions();
-                if (roomEvent instanceof RoomEvent.RoomState) {
-                    Room.State state = room.getState();
-                    switch (state) {
-                        case CONNECTED:
-                            initializeRoom();
-                            break;
+        try {
+            if (roomEvent != null) {
+                this.room = roomEvent.getRoom();
+                if (room != null) {
+                    if (roomEvent instanceof RoomEvent.RoomState) {
+                        Room.State state = room.getState();
+                        switch (state) {
+                            case CONNECTED:
+                                isVideoCallStarted = true;
+                                initializeRoom();
+                                break;
 
-                        case DISCONNECTED:
-                            removeAllParticipants();
-                            localParticipant = null;
-                            room = null;
-                            localParticipantSid = LOCAL_PARTICIPANT_STUB_SID;
-                            setAudioFocus(false);
-                            networkQualityLevels.clear();
-                            finish();
-                            break;
+                            case DISCONNECTED:
+                                if (isVideoCallStarted) {
+                                    removeAllParticipants();
+                                    localParticipant = null;
+                                    room = null;
+                                    localParticipantSid = LOCAL_PARTICIPANT_STUB_SID;
+                                    setAudioFocus(false);
+                                    networkQualityLevels.clear();
+                                    finish();
+                                }
+                                break;
+                        }
                     }
-                }
-                if (roomEvent instanceof RoomEvent.ConnectFailure) {
-                    new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
-                            .setTitle(getString(R.string.room_screen_connection_failure_title))
-                            .setMessage(getString(R.string.room_screen_connection_failure_message))
-                            .setNeutralButton("OK", (dialog, which) -> finish())
-                            .show();
-                    removeAllParticipants();
-                    setAudioFocus(false);
-                }
-                if (roomEvent instanceof RoomEvent.ParticipantConnected) {
-                    boolean renderAsPrimary = room.getRemoteParticipants().size() == 1;
-                    setRemoteThumbVisibility();
-                    addParticipant(((RoomEvent.ParticipantConnected) roomEvent).getRemoteParticipant(), renderAsPrimary);
-                }
-                if (roomEvent instanceof RoomEvent.ParticipantDisconnected) {
-                    RemoteParticipant remoteParticipant = ((RoomEvent.ParticipantDisconnected) roomEvent).getRemoteParticipant();
-                    networkQualityLevels.remove(remoteParticipant.getSid());
-                    setRemoteThumbVisibility();
-                    removeParticipant(remoteParticipant);
-                }
-                if (roomEvent instanceof RoomEvent.DominantSpeakerChanged) {
-                    RemoteParticipant remoteParticipant = ((RoomEvent.DominantSpeakerChanged) roomEvent).getRemoteParticipant();
-
-                    if (remoteParticipant == null) {
-                        participantController.setDominantSpeaker(null);
-                        return;
+                    if (roomEvent instanceof RoomEvent.ConnectFailure) {
+                        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                                .setTitle(getString(R.string.room_screen_connection_failure_title))
+                                .setMessage(getString(R.string.room_screen_connection_failure_message))
+                                .setNeutralButton("OK", (dialog, which) -> finish())
+                                .show();
+                        removeAllParticipants();
+                        setAudioFocus(false);
                     }
+                    if (roomEvent instanceof RoomEvent.ParticipantConnected) {
+                        boolean renderAsPrimary = room.getRemoteParticipants().size() == 1;
+                        setRemoteThumbVisibility();
+                        addParticipant(((RoomEvent.ParticipantConnected) roomEvent).getRemoteParticipant(), renderAsPrimary);
+                    }
+                    if (roomEvent instanceof RoomEvent.ParticipantDisconnected) {
+                        RemoteParticipant remoteParticipant = ((RoomEvent.ParticipantDisconnected) roomEvent).getRemoteParticipant();
+                        networkQualityLevels.remove(remoteParticipant.getSid());
+                        setRemoteThumbVisibility();
+                        removeParticipant(remoteParticipant);
+                    }
+                    if (roomEvent instanceof RoomEvent.DominantSpeakerChanged) {
+                        RemoteParticipant remoteParticipant = ((RoomEvent.DominantSpeakerChanged) roomEvent).getRemoteParticipant();
 
-                    VideoTrack videoTrack = (remoteParticipant.getRemoteVideoTracks().size() > 0)
-                            ? remoteParticipant
-                            .getRemoteVideoTracks()
-                            .get(0)
-                            .getRemoteVideoTrack()
-                            : null;
+                        if (remoteParticipant == null) {
+                            participantController.setDominantSpeaker(null);
+                            return;
+                        }
 
-                    if (videoTrack != null) {
-                        ParticipantView participantView = participantController.getThumb(remoteParticipant.getSid(), videoTrack);
-                        if (participantView != null) {
-                            participantController.setDominantSpeaker(participantView);
-                        } else {
-                            remoteParticipant.getIdentity();
-                            ParticipantPrimaryView primaryParticipantView = participantController.getPrimaryView();
-                            if (primaryParticipantView.getIdentity().equals(remoteParticipant.getIdentity())) {
-                                participantController.setDominantSpeaker(participantController.getPrimaryView());
+                        VideoTrack videoTrack = (remoteParticipant.getRemoteVideoTracks().size() > 0)
+                                ? remoteParticipant
+                                .getRemoteVideoTracks()
+                                .get(0)
+                                .getRemoteVideoTrack()
+                                : null;
+
+                        if (videoTrack != null) {
+                            ParticipantView participantView = participantController.getThumb(remoteParticipant.getSid(), videoTrack);
+                            if (participantView != null) {
+                                participantController.setDominantSpeaker(participantView);
                             } else {
-                                participantController.setDominantSpeaker(null);
+                                remoteParticipant.getIdentity();
+                                ParticipantPrimaryView primaryParticipantView = participantController.getPrimaryView();
+                                if (primaryParticipantView.getIdentity().equals(remoteParticipant.getIdentity())) {
+                                    participantController.setDominantSpeaker(participantController.getPrimaryView());
+                                } else {
+                                    participantController.setDominantSpeaker(null);
+                                }
                             }
                         }
                     }
+                } else {
+                    Timber.i("bindRoomEvents");
                 }
-            } else {
-                Timber.i("bindRoomEvents");
+                updateUi(room, roomEvent);
             }
-            updateUi(room, roomEvent);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -511,19 +527,17 @@ public class TwilioVideoCallActivity extends BaseActivity {
     private void requestPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!permissionsGranted()) {
-                requestPermissions(
-                        new String[]{
-                                Manifest.permission.RECORD_AUDIO,
-                                Manifest.permission.CAMERA,
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                                Manifest.permission.READ_PHONE_STATE
-                        },
+                requestPermissions(requiredPermissionsForVideoCall,
                         PERMISSIONS_REQUEST_CODE);
+            } else if (!isVideoCallStarted) {
+                initiateVideoCall();
             } else {
                 setupLocalMedia();
             }
+        } else if (!isVideoCallStarted) {
+            initiateVideoCall();
         } else {
-            setupLocalMedia();
+            initiateVideoCall();
         }
     }
 
@@ -970,7 +984,7 @@ public class TwilioVideoCallActivity extends BaseActivity {
                     getString(R.string.you),
                     cameraVideoTrack,
                     localAudioTrack == null,
-                    cameraCapturer.getCameraSource() == CameraCapturer.CameraSource.FRONT_CAMERA);
+                    cameraCapturer == null || cameraCapturer.getCameraSource() == CameraCapturer.CameraSource.FRONT_CAMERA);
 
             ParticipantView thumb = participantController.getThumb(localParticipantSid, cameraVideoTrack);
             if (thumb != null) {
@@ -1235,27 +1249,70 @@ public class TwilioVideoCallActivity extends BaseActivity {
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, @NotNull int[] grantResults) {
+        if (requestCode == PERMISSIONS_REQUEST_CODE && permissions.length == requiredPermissionsForVideoCall.length) {
+            boolean recordAudioPermissionGranted =
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED;
+            boolean cameraPermissionGranted = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+            boolean writeExternalStoragePermissionGranted =
+                    grantResults[2] == PackageManager.PERMISSION_GRANTED;
+            boolean permissionsGranted =
+                    recordAudioPermissionGranted
+                            && cameraPermissionGranted
+                            && writeExternalStoragePermissionGranted;
+
+            if (permissionsGranted) {
+                initiateVideoCall();
+            } else {
+                Snackbar.make(binding.layoutContentRoom.primaryVideo, R.string.permissions_required, Snackbar.LENGTH_LONG)
+                        .show();
+            }
+        }
+    }
+
+    @Override
     public void onClickEvent(View view) {
         super.onClickEvent(view);
 
         try {
-            setMediaControlOptionState((ImageView) view, !view.isSelected());
             int id = view.getId();
             if (id == R.id.iv_mediaControl_audio) {
-                toggleLocalAudio();
+                if (permissionsGranted()) {
+                    setMediaControlOptionState((ImageView) view, !view.isSelected());
+                    toggleLocalAudio();
+                } else {
+                    requestPermissions();
+                }
             } else if (id == R.id.iv_mediaControl_video) {
-                toggleLocalVideo();
+                if (permissionsGranted()) {
+                    setMediaControlOptionState((ImageView) view, !view.isSelected());
+                    toggleLocalVideo();
+                } else {
+                    requestPermissions();
+                }
             } else if (id == R.id.iv_mediaControl_moreOptions) {
+                setMediaControlOptionState((ImageView) view, !view.isSelected());
                 binding.groupMediaControlsMoreOptions.setVisibility(binding.ivMediaControlMoreOptions.isSelected() ? View.VISIBLE : View.GONE);
             } else if (id == R.id.iv_mediaControl_cameraSwitch) {
-                switchCamera();
-            } else if (id == R.id.iv_mediaControl_audioOutput) {
-                if (audioManager.isSpeakerphoneOn()) {
-                    audioManager.setSpeakerphoneOn(false);
-                    binding.ivMediaControlAudioOutput.setImageResource(R.drawable.ic_phonelink_ring_white);
+                if (permissionsGranted()) {
+                    setMediaControlOptionState((ImageView) view, !view.isSelected());
+                    switchCamera();
                 } else {
-                    audioManager.setSpeakerphoneOn(true);
-                    binding.ivMediaControlAudioOutput.setImageResource(R.drawable.ic_volume_up_white);
+                    requestPermissions();
+                }
+            } else if (id == R.id.iv_mediaControl_audioOutput) {
+                if (permissionsGranted()) {
+                    setMediaControlOptionState((ImageView) view, !view.isSelected());
+
+                    if (audioManager.isSpeakerphoneOn()) {
+                        audioManager.setSpeakerphoneOn(false);
+                        binding.ivMediaControlAudioOutput.setImageResource(R.drawable.ic_phonelink_ring_white);
+                    } else {
+                        audioManager.setSpeakerphoneOn(true);
+                        binding.ivMediaControlAudioOutput.setImageResource(R.drawable.ic_volume_up_white);
+                    }
+                } else {
+                    requestPermissions();
                 }
             } else if (id == R.id.iv_mediaControl_screenShare) {
                 String shareScreen = getString(R.string.share_screen);
@@ -1265,9 +1322,11 @@ public class TwilioVideoCallActivity extends BaseActivity {
                         requestScreenCapturePermission();
                     } else {
                         startScreenCapture();
+                        setMediaControlOptionState((ImageView) view, !view.isSelected());
                     }
                 } else {
                     stopScreenCapture();
+                    setMediaControlOptionState((ImageView) view, !view.isSelected());
                 }
             }
         } catch (Exception e) {

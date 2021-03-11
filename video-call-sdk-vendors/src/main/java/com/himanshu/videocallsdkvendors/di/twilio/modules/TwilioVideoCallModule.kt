@@ -8,8 +8,14 @@ import dagger.android.AndroidInjector
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 
+/**
+ * @author : Himanshu Sachdeva
+ * @created : 13-May-2020
+ * @email : himanshu.sachdeva1994@gmail.com
+ */
 @Module(subcomponents = [TwilioVideoCallSubcomponent::class])
-abstract class TwilioVideoCallModule {
+abstract class
+TwilioVideoCallModule {
     @Binds
     @IntoMap
     @ClassKey(TwilioVideoCallActivity::class)

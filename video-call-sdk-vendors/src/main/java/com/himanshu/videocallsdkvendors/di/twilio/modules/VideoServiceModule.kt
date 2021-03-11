@@ -8,6 +8,11 @@ import dagger.android.AndroidInjector
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 
+/**
+ * @author : Himanshu Sachdeva
+ * @created : 13-May-2020
+ * @email : himanshu.sachdeva1994@gmail.com
+ */
 @Module(subcomponents = [VideoServiceSubcomponent::class])
 abstract class VideoServiceModule {
     @Binds

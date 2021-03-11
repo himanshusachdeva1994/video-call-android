@@ -15,6 +15,11 @@ import dagger.android.AndroidInjection
 import timber.log.Timber
 import javax.inject.Inject
 
+/**
+ * @author : Himanshu Sachdeva
+ * @created : 03-May-2020
+ * @email : himanshu.sachdeva1994@gmail.com
+ */
 class TwilioVideoService : LifecycleService() {
 
     companion object {
@@ -53,15 +58,15 @@ class TwilioVideoService : LifecycleService() {
         Timber.d("VideoService destroyed")
     }
 
-    private fun bindRoomEvents(nullableRoomEvent: RoomEvent?) {
-        nullableRoomEvent?.let { roomEvent ->
-            roomEvent.room?.let { room ->
-                if (roomEvent is RoomEvent.RoomState) {
-                    if (room.state == CONNECTED) {
-                        val roomNotification = RoomNotification(this@TwilioVideoService)
-                        startForeground(ONGOING_NOTIFICATION_ID,
-                                roomNotification.buildNotification(room.name))
-                    } else if (room.state == DISCONNECTED) stopSelf()
+    private fun bindRoomEvents(roomEvent: RoomEvent?) {
+        roomEvent?.room?.let { room ->
+            if (roomEvent is RoomEvent.RoomState) {
+                if (room.state == CONNECTED) {
+                    val roomNotification = RoomNotification(this@TwilioVideoService)
+                    startForeground(ONGOING_NOTIFICATION_ID,
+                            roomNotification.buildNotification(room.name))
+                } else if (room.state == DISCONNECTED) {
+                    stopSelf()
                 }
             }
         }
